@@ -3,25 +3,26 @@ using Stipple, StippleUI, StippleCharts
 using DataFrames
 
 data = DataFrame(Costs = [44, 55, 13, 43, 22])
+labels = ["Team A", "Team B", "Team C", "Team D", "Team E"]
+chart_width = 500
 # data2 = DataFrame(Costs = [21, 99, 13, 21, 70])
 
 @reactive! mutable struct Example <: ReactiveModel
-    plot_options_bar::R{PlotOptions} = PlotOptions(
+    plot_options_bar::R{PlotOptions} = PlotOptions(;
         chart_type = :bar,
-        labels = ["Team A", "Team B", "Team C", "Team D", "Team E"],
-        yaxis_max = 60,
-        yaxis_min = 0,
+        chart_width,
+        labels,
         ), READONLY
-    barchart::R{Vector{PlotSeries}} = [PlotSeries("name", PlotData(data.Costs))]
 
-    plot_options_pie::R{PlotOptions} = PlotOptions(
+    plot_options_pie::R{PlotOptions} = PlotOptions(;
         chart_type = :pie,
-        chart_width = 500,
+        chart_width,
         chart_animations_enabled = true,
         stroke_show = false,
-        labels = ["Slice A", "Slice B"],
+        labels,
       )
-    piechart_::R{Vector} = [23, 55]
+    piechart_::R{Vector} = data.Costs
+    barchart::R{Vector{PlotSeries}} = [PlotSeries("name", PlotData(piechart_))]
 
     drawer::R{Bool} = false
     show_bar::R{Bool} = true
@@ -45,18 +46,17 @@ function ui(model)
                     btn("",icon="menu", @click("drawer = ! drawer"))
                     title("Example App")
             ])
-
             drawer(side="left", v__model="drawer", [
                 list([
                     btn("", style = "width: 30px;",icon="menu", @click("drawer = ! drawer"))
                     item([
                         item_section(icon("bar_chart"), :avatar)
                         item_section("Bar")
-                    ], :clickable, :v__ripple, @click("show_bar = true"))
+                    ], :clickable, :v__ripple, @click("show_bar = true, drawer = false"))
                     item([
                         item_section(icon("pie_chart"), :avatar)
                         item_section("Circle")
-                    ], :clickable, :v__ripple, @click("show_bar = false"))
+                    ], :clickable, :v__ripple, @click("show_bar = false, drawer = false"))
                 ])
             ])
             h3("Example Plot")

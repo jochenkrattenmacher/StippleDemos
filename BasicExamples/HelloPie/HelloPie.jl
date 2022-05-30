@@ -9,7 +9,7 @@ using StippleCharts
     stroke_show = false,
     labels = ["Slice A", "Slice B"],
   )
-  piechart_::R{Vector} = Any[44, 55]
+  piechart_::R{Vector} = [23, 55]
   values::R{String} = join(piechart_, ",")
 end
 
@@ -57,7 +57,7 @@ function ui(model)
           ),
         )
         row(
-          cell(class = "st-module", [plot(@data(:piechart_), options! = "plot_options")]),
+          cell(class = "st-module", [plot(:piechart_, options! = "plot_options")]),
         )
       ],
     ),

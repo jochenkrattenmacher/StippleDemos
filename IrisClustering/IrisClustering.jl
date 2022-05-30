@@ -69,7 +69,7 @@ function ui(model::IrisModel)
     prepend = style(
     """
     tr:nth-child(even) {
-      background: #F8F8F8 !important;
+      background: #F8F0FF !important;
     }
 
     .modebar {
@@ -92,6 +92,8 @@ function ui(model::IrisModel)
     [
       heading("Iris data k-means clustering")
 
+      drawer(width = "300px")
+      
       row([
         cell(class="st-module", [
           h6("Number of clusters")
@@ -142,5 +144,37 @@ end
 route("/") do
   IrisModel |> init |> ui |> html
 end
+
+@reactive! mutable struct ButtonModel <: ReactiveModel
+  press_btn::R{Bool} = false
+end
+
+function handlers(button_model)
+  onbutton(button_model.press_btn) do
+    @info "pressed"
+  end
+  button_model
+end
+
+function ui(button_model)
+  page(
+    button_model,
+    title = "Button Components",
+    class = "q-pa-md q-gutter-sm",
+    [
+      btn("On Left", color = "primary", icon = "mail", @click("press_btn = true")),
+      btn("Go to Hello World", color = "red", type = "a", href = "hello", icon = "map", iconright = "send")
+    ]
+  )
+end
+
+route("/yo") do
+  init(ButtonModel) |> handlers |> ui |> html
+end
+
+route("/hello") do
+  "Hello World"
+end
+
 
 up(9000; async = true, server = Stipple.bootstrap())
