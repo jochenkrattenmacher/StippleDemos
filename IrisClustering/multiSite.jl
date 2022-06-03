@@ -49,6 +49,7 @@ end
 function handlers(model)
     on(model.isready) do ready
         ready || return
+        push!(model)
         notify(model.plot_options)        
     end
     on(model.show_bar) do _
@@ -95,6 +96,10 @@ function ui(model)
 end
 
 route("/") do
+    model |> handlers |> ui |> html
+end
+
+route("/2") do
     model |> handlers |> ui |> html
 end
 
