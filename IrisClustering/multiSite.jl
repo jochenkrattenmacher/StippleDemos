@@ -1,48 +1,49 @@
-using Stipple, StippleUI, StippleCharts
+using Stipple, StippleUI, StipplePlotly
 
-using DataFrames
-
-data = DataFrame(Costs = [44, 55, 13, 43, 22])
-labels = ["Team A", "Team B", "Team C", "Team D", "Team E"]
-chart_width = 500
-# data2 = DataFrame(Costs = [21, 99, 13, 21, 70])
-barchart = [PlotSeries("name", PlotData(data.Costs))]
-piechart = data.Costs
-plot_options_bar = PlotOptions(;
-    chart_type = :bar,
-    chart_width,
-    labels,
+pd(name; plot_type = "scatter") = PlotData(
+    x = [
+        "Jan2019",
+        "Feb2019",
+        "Mar2019",
+        "Apr2019",
+        "May2019",
+        "Jun2019",
+        "Jul2019",
+        "Aug2019",
+        "Sep2019",
+        "Oct2019",
+        "Nov2019",
+        "Dec2019",
+    ],
+    y = Int[rand(1:100_000) for x = 1:12],
+    plot = plot_type,
+    name = name,
 )
 
-plot_options_pie = PlotOptions(;
-    chart_type = :pie,
-    chart_width,
-    chart_animations_enabled = true,
-    stroke_show = false,
-    labels,
-)
 
 @reactive! mutable struct Example <: ReactiveModel
-    plot_options::R{PlotOptions} = plot_options_pie
-    chart::R{Union{Vector,Vector{PlotSeries}}} = piechart
+    data::R{Vector{PlotData}} = [pd("Random 1"), pd("Random 2")]
+    layout::R{PlotLayout} = PlotLayout(
+        plot_bgcolor = "#333",
+        title = PlotLayoutTitle(text = "Random numbers", font = Font(24)),
+    )
+    config::R{PlotConfig} = PlotConfig()
 
     drawer::R{Bool} = false
     show_bar::R{Bool} = false
     show_plot::R{Bool} = false
 end
 
-Stipple.register_components(Example, StippleCharts.COMPONENTS)
 model = Stipple.init(Example)
 
 function switch_plots(model)
     println("hello")
     if model.show_bar[]
-        model.plot_options[] = plot_options_bar
-        model.chart[] = barchart
+        setproperty!.(model.data[], :plot, "bar")
     else
-        model.plot_options[] = plot_options_pie
-        model.chart[] = piechart
+        setproperty!.(model.data[], :plot, "scatter")
     end
+    notify(model.data)
     return model
 end
 
@@ -76,18 +77,18 @@ function ui(model)
                         item_section("Bar")
                     ], :clickable, :v__ripple, @click("show_bar = true, drawer = false"))
                     item([
-                        item_section(icon("pie_chart"), :avatar)
-                        item_section("Circle")
+                        item_section(icon("scatter_plot"), :avatar)
+                        item_section("Scatter")
                     ], :clickable, :v__ripple, @click("show_bar = false, drawer = false"))
                 ])
             ])
             h3("Example Plot")
             row(
-                StippleCharts.plot(:chart, options = :plot_options), @iif(:show_plot)
+                plot(:data, layout = :layout, config = :config), @iif(:show_plot)
             )
             row(
                 # cell(class = "st-module", [plot(:piechart_, options! = "plot_options")]),
-                [radio("Pie plot", :show_bar, val = 0),
+                [radio("Scatter plot", :show_bar, val = 0),
                 radio("Bar plot", :show_bar, val = "true"),
                 btn("Show plot", color = "secondary", @click("show_plot = true"))],@els(:show_plot)
             )
