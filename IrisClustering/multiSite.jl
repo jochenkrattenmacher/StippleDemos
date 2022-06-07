@@ -24,7 +24,8 @@ pd(name; plot_type = "scatter") = PlotData(
 @reactive! mutable struct Example <: ReactiveModel
     data::R{Vector{PlotData}} = [pd("Random 1"), pd("Random 2")]
     layout::R{PlotLayout} = PlotLayout(
-        plot_bgcolor = "#333",
+        plot_bgcolor = "#0000",
+        paper_bgcolor = "#0000",
         title = PlotLayoutTitle(text = "Random numbers", font = Font(24)),
     )
     config::R{PlotConfig} = PlotConfig()
@@ -63,15 +64,15 @@ function handlers(model)
 end
 
 function ui(model)
-    dashboard(model, [
+    page(model, 
+    [
         StippleUI.Layouts.layout([
-            header([
+            quasar(:header, quasar(:toolbar, [
                     btn("",icon="menu", @click("drawer = ! drawer"))
-                    title("Example App")
-            ])
+                    quasar(:toolbar__title, "Example App")])
+            )
             drawer(side="left", v__model="drawer", [
                 list([
-                    btn("", style = "width: 30px;",icon="menu", @click("drawer = ! drawer"))
                     item([
                         item_section(icon("bar_chart"), :avatar)
                         item_section("Bar")
@@ -82,15 +83,18 @@ function ui(model)
                     ], :clickable, :v__ripple, @click("show_bar = false, drawer = false"))
                 ])
             ])
-            h3("Example Plot")
+            StippleUI.Layouts.page_container("",[
             row(
-                plot(:data, layout = :layout, config = :config), @iif(:show_plot)
+                [cell(class = "q-gutter-xs", [
+                plot(:data, layout = :layout, config = :config)]), cell(class = "q-gutter-xs", [
+                    plot(:data, layout = :layout, config = :config)])], @iif(:show_plot)
             )
             row(
-                # cell(class = "st-module", [plot(:piechart_, options! = "plot_options")]),
+                cell(class = "q-gutter-xs", 
                 [radio("Scatter plot", :show_bar, val = 0),
                 radio("Bar plot", :show_bar, val = "true"),
-                btn("Show plot", color = "secondary", @click("show_plot = true"))],@els(:show_plot)
+                btn("Show plot", color = "secondary", @click("show_plot = true"))]),@els(:show_plot)
+            )]
             )
         ])
     ])
